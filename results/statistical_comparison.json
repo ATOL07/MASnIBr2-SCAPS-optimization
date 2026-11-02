@@ -1,0 +1,41 @@
+{
+  "ppsr_champions": [
+    25.2604,
+    25.2456,
+    25.2627,
+    25.2628,
+    25.2613,
+    25.2473
+  ],
+  "baseline_champions": [
+    25.271,
+    25.2704,
+    25.2692,
+    25.2724,
+    25.268,
+    25.2692
+  ],
+  "ppsr_mean": 25.25668333333333,
+  "ppsr_std": 0.007995352816897042,
+  "baseline_mean": 25.270033333333334,
+  "baseline_std": 0.001561623087260908,
+  "mean_difference": -0.013350000000002638,
+  "diff_95ci": [
+    -0.01986850216605939,
+    -0.006831497833945884
+  ],
+  "welch_t": {
+    "statistic": -4.014112342595692,
+    "p_value": 0.008762281527693745
+  },
+  "mann_whitney_u": {
+    "statistic": 0.0,
+    "p_value": 0.004998124765082457
+  },
+  "cohens_d": -2.317548841555022,
+  "cohens_d_interpretation": "large",
+  "significant_at_0.05": true,
+  "n_per_group": 6,
+  "minimum_detectable_effect_pp": 0.008370286792369954,
+  "observed_power": 0.9052190660974531
+}

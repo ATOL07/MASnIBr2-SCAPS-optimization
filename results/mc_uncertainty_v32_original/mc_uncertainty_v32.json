@@ -1,0 +1,18 @@
+{
+  "stats": {
+    "n_success": 375,
+    "n_requested": 500,
+    "n_rejected_precheck": 125,
+    "n_rejected_scaps": 0,
+    "yield_percent": 75.0,
+    "eta_mean": 25.207013333333336,
+    "eta_std": 0.09563757223401481,
+    "eta_p05": 25.02013,
+    "eta_p50": 25.222,
+    "eta_p95": 25.334860000000003,
+    "Voc_mean": 1.4149931999999998,
+    "Jsc_mean": 19.9747558008,
+    "FF_mean": 89.18480960000002,
+    "champion_scaps": "D:\\Scaps3311\\Results_v33_Au_corrected_FINAL\\best_device_seed789.scaps"
+  }
+}

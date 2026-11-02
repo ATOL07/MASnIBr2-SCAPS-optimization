@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the article below."
+title: "MASnIBr2-SCAPS-optimization: code, data and trained models"
+type: software
+license: MIT
+repository-code: "https://github.com/ATOL07/MASnIBr2-SCAPS-optimization"
+version: "1.0"
+authors:
+  - family-names: Atol
+    given-names: Khairul Islam
+  - family-names: Mamoon
+    given-names: Iqra
+  - family-names: Al-Atawi
+    given-names: Faoz H.
+  - family-names: Irfan
+    given-names: Ahmad
+  - family-names: Rahman
+    given-names: Md. Ferdous
+  - family-names: Haque
+    given-names: Md. Dulal
+preferred-citation:
+  type: article
+  title: "Multi Algorithm Bayesian Optimization and Machine Learning Surrogate Design of Lead-Free FTO/WO3/MASnIBr2/CBTS/Au, Tin-perovskite Solar Cells"
+  journal: "Sustainable Energy Technologies and Assessments"
+  year: 2026
+  notes: "Under review"
+  authors:
+    - family-names: Atol
+      given-names: Khairul Islam
+    - family-names: Mamoon
+      given-names: Iqra
+    - family-names: Al-Atawi
+      given-names: Faoz H.
+    - family-names: Irfan
+      given-names: Ahmad
+    - family-names: Rahman
+      given-names: Md. Ferdous
+    - family-names: Haque
+      given-names: Md. Dulal

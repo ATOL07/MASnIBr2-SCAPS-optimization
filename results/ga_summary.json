@@ -1,0 +1,80 @@
+{
+  "multi_seed": {
+    "n_seeds": 6,
+    "mean": 25.268816666666666,
+    "std": 0.0032058800143907025,
+    "sem": 0.001308795035307269,
+    "ci_95_lo": 25.265452301922334,
+    "ci_95_hi": 25.272181031410998,
+    "min": 25.2637,
+    "max": 25.2712,
+    "all_values": [
+      25.2712,
+      25.2659,
+      25.2637,
+      25.2702,
+      25.2709,
+      25.271
+    ]
+  },
+  "per_seed": [
+    {
+      "seed": 42,
+      "global_best": 25.2712,
+      "wall_time_seconds": 17205.190420866013,
+      "total_trials": 1000,
+      "valid_trials": 968,
+      "population_size": 40
+    },
+    {
+      "seed": 123,
+      "global_best": 25.2659,
+      "wall_time_seconds": 16076.771349191666,
+      "total_trials": 1000,
+      "valid_trials": 965,
+      "population_size": 40
+    },
+    {
+      "seed": 456,
+      "global_best": 25.2637,
+      "wall_time_seconds": 15937.059455156326,
+      "total_trials": 1000,
+      "valid_trials": 961,
+      "population_size": 40
+    },
+    {
+      "seed": 789,
+      "global_best": 25.2702,
+      "wall_time_seconds": 16443.88218355179,
+      "total_trials": 1000,
+      "valid_trials": 964,
+      "population_size": 40
+    },
+    {
+      "seed": 1000,
+      "global_best": 25.2709,
+      "wall_time_seconds": 16395.453518629074,
+      "total_trials": 1000,
+      "valid_trials": 937,
+      "population_size": 40
+    },
+    {
+      "seed": 2024,
+      "global_best": 25.271,
+      "wall_time_seconds": 15718.513675928116,
+      "total_trials": 1000,
+      "valid_trials": 944,
+      "population_size": 40
+    }
+  ],
+  "ga_config": {
+    "population_size": 40,
+    "elitism": 2,
+    "mutation_rate": 0.15,
+    "crossover_rate": 0.8,
+    "tournament_k": 3,
+    "mutation_sigma": 0.15
+  },
+  "total_wall_hours": 27.160241834256386,
+  "matched_trials_per_seed": 1000
+}

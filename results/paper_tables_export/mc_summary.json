@@ -1,0 +1,18 @@
+{
+  "stats": {
+    "n_success": 336,
+    "n_requested": 500,
+    "n_rejected_precheck": 164,
+    "n_rejected_scaps": 0,
+    "yield_percent": 67.2,
+    "eta_mean": 25.240605357142858,
+    "eta_std": 0.0925481656019718,
+    "eta_p05": 25.072674999999997,
+    "eta_p50": 25.2473,
+    "eta_p95": 25.370075,
+    "Voc_mean": 1.4158736785714285,
+    "Jsc_mean": 19.976525284226188,
+    "FF_mean": 89.2403875,
+    "champion_scaps": "D:\\Scaps3311\\Results_v33_Au_corrected_FINAL\\baseline_best_seed789.scaps"
+  }
+}

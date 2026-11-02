@@ -1,0 +1,6 @@
+# large figure files are rebuilt by the notebook
+results/figures/*.tif
+results/figures/*.tiff
+results/**/*.pkl
+.ipynb_checkpoints/
+__pycache__/

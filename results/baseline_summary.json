@@ -1,0 +1,66 @@
+{
+  "multi_seed": {
+    "n_seeds": 6,
+    "mean": 25.270033333333334,
+    "std": 0.001561623087260908,
+    "sem": 0.0006375299557231657,
+    "ci_95_lo": 25.26839451040948,
+    "ci_95_hi": 25.27167215625719,
+    "min": 25.268,
+    "max": 25.2724,
+    "all_values": [
+      25.271,
+      25.2704,
+      25.2692,
+      25.2724,
+      25.268,
+      25.2692
+    ]
+  },
+  "per_seed": [
+    {
+      "seed": 42,
+      "global_best": 25.271,
+      "wall_time_seconds": 13880.532651901245,
+      "total_trials": 1000,
+      "valid_trials": 759
+    },
+    {
+      "seed": 123,
+      "global_best": 25.2704,
+      "wall_time_seconds": 15692.7039539814,
+      "total_trials": 1000,
+      "valid_trials": 859
+    },
+    {
+      "seed": 456,
+      "global_best": 25.2692,
+      "wall_time_seconds": 15370.070914268494,
+      "total_trials": 1000,
+      "valid_trials": 879
+    },
+    {
+      "seed": 789,
+      "global_best": 25.2724,
+      "wall_time_seconds": 14276.586039304733,
+      "total_trials": 1000,
+      "valid_trials": 783
+    },
+    {
+      "seed": 1000,
+      "global_best": 25.268,
+      "wall_time_seconds": 13389.76277089119,
+      "total_trials": 1000,
+      "valid_trials": 751
+    },
+    {
+      "seed": 2024,
+      "global_best": 25.2692,
+      "wall_time_seconds": 14650.959319591522,
+      "total_trials": 1000,
+      "valid_trials": 853
+    }
+  ],
+  "total_wall_hours": 24.23905990276072,
+  "matched_trials_per_seed": 1000
+}

@@ -1,0 +1,37 @@
+method,target_fraction,trials_to_target
+PPSR,0.9,1
+PPSR,0.9,0
+PPSR,0.9,1
+PPSR,0.9,1
+PPSR,0.9,2
+PPSR,0.9,0
+Baseline TPE,0.9,3
+Baseline TPE,0.9,0
+Baseline TPE,0.9,2
+Baseline TPE,0.9,1
+Baseline TPE,0.9,4
+Baseline TPE,0.9,0
+PPSR,0.95,4
+PPSR,0.95,0
+PPSR,0.95,1
+PPSR,0.95,1
+PPSR,0.95,2
+PPSR,0.95,1
+Baseline TPE,0.95,8
+Baseline TPE,0.95,0
+Baseline TPE,0.95,8
+Baseline TPE,0.95,1
+Baseline TPE,0.95,7
+Baseline TPE,0.95,7
+PPSR,0.99,4
+PPSR,0.99,0
+PPSR,0.99,2
+PPSR,0.99,1
+PPSR,0.99,4
+PPSR,0.99,17
+Baseline TPE,0.99,27
+Baseline TPE,0.99,12
+Baseline TPE,0.99,14
+Baseline TPE,0.99,26
+Baseline TPE,0.99,32
+Baseline TPE,0.99,27

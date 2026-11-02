@@ -1,0 +1,17 @@
+{
+  "V_Voc": 1.416033,
+  "Jsc_extracted": 19.9859121,
+  "j_total_gen": 20.0396432,
+  "absorption_efficiency_pct": 99.73187596473774,
+  "j_total_rec_Voc": 20.06087525652006,
+  "jbulk_Voc": 19.95882002508006,
+  "jifr_Voc": 0.0031489448395340095,
+  "jSRH_Voc": 1.4249969388440022,
+  "jRadiative_Voc": 18.533823054500058,
+  "jAuger_Voc": 0.0,
+  "bulk_fraction": 99.4912722892944,
+  "interface_fraction": 0.015696946415688213,
+  "SRH_fraction": 7.103363739729446,
+  "radiative_fraction": 92.38790839136648,
+  "Auger_fraction": 0.0
+}

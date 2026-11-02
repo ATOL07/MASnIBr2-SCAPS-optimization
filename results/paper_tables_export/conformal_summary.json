@@ -1,0 +1,8 @@
+{
+  "target_coverage_pct": 90.0,
+  "empirical_coverage_pct": 89.15145005370569,
+  "q_hat": 0.0357416999999959,
+  "mean_interval_width": 0.0714833999999918,
+  "n_calibration": 2792,
+  "n_test": 2793
+}

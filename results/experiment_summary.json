@@ -1,0 +1,118 @@
+{
+  "config": {
+    "n_seeds": 6,
+    "trials_per_round": 200,
+    "max_rounds": 5,
+    "eval_boundaries": false,
+    "ablation": {
+      "ppsr_narrowing": true,
+      "physics_precheck": true,
+      "physics_postcheck": true,
+      "rollback": true
+    }
+  },
+  "multi_seed": {
+    "n_seeds": 6,
+    "mean": 25.25668333333333,
+    "std": 0.007995352816897042,
+    "sem": 0.003264089119153649,
+    "ci_95_lo": 25.248292725133737,
+    "ci_95_hi": 25.265073941532926,
+    "min": 25.2456,
+    "max": 25.2628,
+    "all_values": [
+      25.2604,
+      25.2456,
+      25.2627,
+      25.2628,
+      25.2613,
+      25.2473
+    ]
+  },
+  "bootstrap": {
+    "observed_max": 25.2628,
+    "observed_top_k_mean": 25.262059999999998,
+    "boot_mean": 25.262002129999996,
+    "boot_std": 0.00028992389190952154,
+    "ci_lo": 25.26136,
+    "ci_hi": 25.26251,
+    "k": 10,
+    "n_boot": 2000
+  },
+  "per_seed": [
+    {
+      "seed": 42,
+      "global_best": 25.2604,
+      "best_per_round": [
+        25.2417,
+        25.2604,
+        25.2604
+      ],
+      "wall_time_seconds": 9060.60726571083,
+      "total_trials": 600,
+      "valid_trials": 531
+    },
+    {
+      "seed": 123,
+      "global_best": 25.2456,
+      "best_per_round": [
+        25.2232,
+        25.2417,
+        25.2456
+      ],
+      "wall_time_seconds": 9791.227830171585,
+      "total_trials": 600,
+      "valid_trials": 592
+    },
+    {
+      "seed": 456,
+      "global_best": 25.2627,
+      "best_per_round": [
+        25.2402,
+        25.2549,
+        25.2627
+      ],
+      "wall_time_seconds": 9476.434433460236,
+      "total_trials": 600,
+      "valid_trials": 571
+    },
+    {
+      "seed": 789,
+      "global_best": 25.2628,
+      "best_per_round": [
+        25.2511,
+        25.2511,
+        25.2628
+      ],
+      "wall_time_seconds": 9910.934346675873,
+      "total_trials": 600,
+      "valid_trials": 551
+    },
+    {
+      "seed": 1000,
+      "global_best": 25.2613,
+      "best_per_round": [
+        25.2613,
+        25.2613,
+        25.2613
+      ],
+      "wall_time_seconds": 9252.09950041771,
+      "total_trials": 600,
+      "valid_trials": 516
+    },
+    {
+      "seed": 2024,
+      "global_best": 25.2473,
+      "best_per_round": [
+        25.2439,
+        25.2454,
+        25.2473
+      ],
+      "wall_time_seconds": 10124.062303066254,
+      "total_trials": 600,
+      "valid_trials": 577
+    }
+  ],
+  "total_wall_hours": 16.004268244306246,
+  "total_trials": 3600
+}

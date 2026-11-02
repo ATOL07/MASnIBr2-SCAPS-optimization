@@ -1,0 +1,14 @@
+# Versions used to produce the results in the paper (Python 3.13.1; printed by notebook cell 0.3).
+# Other versions run the notebook too, but scikit-learn changes can move ML numbers in the 4th decimal.
+numpy==2.4.0
+pandas==2.3.3
+scipy==1.16.3
+scikit-learn==1.8.0
+matplotlib==3.10.8
+optuna==4.6.0
+shap==0.51.0
+xgboost==3.2.0
+catboost==1.2.10
+pvlib==0.15.1
+joblib
+jupyter

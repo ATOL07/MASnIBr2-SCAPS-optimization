@@ -3217,6 +3217,261 @@ print(f'  Save .scaps per temperature: {SAVE_SCAPS_PER_TEMPERATURE}')
 # ####################################################################################
 # From the original notebook
 # ####################################################################################
+
+# Monte Carlo fabrication tolerance (used by notebook cell 7.1)
+# ============================================================
+#   - a full .scaps file is written for each Monte Carlo sample
+#   - nominal values are read from the trials database
+#   - each variable is drawn from a log-normal distribution: value * exp(N(0, ln(1 + sigma)))
+#   - the physics precheck is applied before SCAPS-1D
+#   - raw samples (CSV) and a summary (JSON) are saved
+# ============================================================
+
+def _sample_parameter_v32(nominal_value, sigma, distribution):
+    """Sample a perturbed parameter value."""
+    if distribution == 'lognormal':
+        log_sigma = np.log1p(sigma)
+        return nominal_value * np.exp(np.random.normal(0, log_sigma))
+    if distribution == 'normal':
+        return nominal_value + np.random.normal(0, sigma)
+    raise ValueError(f'Unknown distribution: {distribution}')
+
+
+def _get_mc_nominal_params():
+    """Recover nominal optimal parameters from trials DB, then JSON, then defaults."""
+    etl = device.get_layer_by_role('ETL')
+    absorber = device.get_layer_by_role('ABSORBER')
+    htl = device.get_layer_by_role('HTL')
+    defaults = {
+        f'{etl.name}_thickness'      : 0.050 if etl else 0.050,
+        f'{absorber.name}_thickness' : 0.350 if absorber else 0.350,
+        f'{htl.name}_thickness'      : 0.100 if htl else 0.100,
+        f'{etl.name}_ND'             : 1.0e18 if etl else 1.0e18,
+        f'{htl.name}_NA'             : 1.0e18 if htl else 1.0e18,
+        f'{absorber.name}_defect'    : 1.0e14 if absorber else 1.0e14,
+        'back_contact_wf'            : VALIDATED_BACK_WF,
+    }
+    for iface_key in getattr(device, 'interface_space', {}):
+        defaults[iface_key] = FIXED_INTERFACE_N
+
+    db_path = globals().get('DB_PATH', os.path.join(OUT_DIR, 'trials.db'))
+    try:
+        if os.path.exists(db_path):
+            with sqlite3.connect(db_path) as conn:
+                df = pd.read_sql('SELECT * FROM trials WHERE valid_run = 1 ORDER BY eta DESC LIMIT 1', conn)
+            if len(df):
+                row = df.iloc[0].to_dict()
+                for _layer in [etl, absorber, htl]:
+                    if _layer is not None:
+                        _short = f'{_layer.name}_t'
+                        _legacy = f'{_layer.name}_thickness'
+                        if _short in row and pd.notna(row[_short]):
+                            row[_legacy] = row[_short]
+                defaults.update({k: v for k, v in row.items() if k in defaults and pd.notna(v)})
+                return defaults
+    except Exception as e:
+        print(f'  WARN: could not recover optimal device from trials DB: {e}')
+
+    summary_file = os.path.join(OUT_DIR, 'experiment_summary.json')
+    try:
+        if os.path.exists(summary_file):
+            with open(summary_file, 'r', encoding='utf-8') as f:
+                summary = json.load(f)
+            for seed_row in summary.get('per_seed', []):
+                pass
+    except Exception:
+        pass
+
+    return defaults
+
+
+def _mc_build_updates(perturbed):
+    etl = device.get_layer_by_role('ETL')
+    absorber = device.get_layer_by_role('ABSORBER')
+    htl = device.get_layer_by_role('HTL')
+
+    layer_updates = {}
+    if etl:
+        layer_updates[etl.block_name] = {
+            'thickness_um': perturbed.get(f'{etl.name}_thickness'),
+            'doping_type' : etl.doping_type,
+            'na_val'      : None,
+            'nd_val'      : perturbed.get(f'{etl.name}_ND'),
+            'defect'      : None,
+        }
+    if absorber:
+        layer_updates[absorber.block_name] = {
+            'thickness_um': perturbed.get(f'{absorber.name}_thickness'),
+            'doping_type' : absorber.doping_type,
+            'na_val'      : FIXED_ABSORBER_NA,
+            'nd_val'      : FIXED_ABSORBER_ND,
+            'defect'      : perturbed.get(f'{absorber.name}_defect'),
+        }
+    if htl:
+        layer_updates[htl.block_name] = {
+            'thickness_um': perturbed.get(f'{htl.name}_thickness'),
+            'doping_type' : htl.doping_type,
+            'na_val'      : perturbed.get(f'{htl.name}_NA'),
+            'nd_val'      : None,
+            'defect'      : None,
+        }
+
+    iface_vals = {}
+    for key in getattr(device, 'interface_space', {}):
+        iface_vals[key] = perturbed.get(key, FIXED_INTERFACE_N)
+
+    return layer_updates, iface_vals
+
+
+def run_mc_uncertainty(optimal_device_file):
+    """Run full structural Monte Carlo uncertainty with .scaps mutation."""
+    print('=' * 70)
+    print(f'MONTE CARLO UNCERTAINTY — {MC_N_SAMPLES} samples')
+    print('=' * 70)
+
+    if not os.path.exists(optimal_device_file):
+        print(f'  ERROR: Optimal device file not found: {optimal_device_file}')
+        return None
+
+    nominal = _get_mc_nominal_params()
+
+    # Map legacy sigma names to actual notebook column names
+    etl = device.get_layer_by_role('ETL')
+    absorber = device.get_layer_by_role('ABSORBER')
+    htl = device.get_layer_by_role('HTL')
+    iface_keys = list(getattr(device, 'interface_space', {}).keys())
+
+    sigma_map = {
+        'wo3_thickness'     : f'{etl.name}_thickness' if etl else 'WO3_thickness',
+        'absorber_thickness': f'{absorber.name}_thickness' if absorber else 'MASnIBr2_thickness',
+        'cbts_thickness'    : f'{htl.name}_thickness' if htl else 'CBTS_thickness',
+        'wo3_ND'            : f'{etl.name}_ND' if etl else 'WO3_ND',
+        'cbts_NA'           : f'{htl.name}_NA' if htl else 'CBTS_NA',
+        'absorber_Nt'       : f'{absorber.name}_defect' if absorber else 'MASnIBr2_defect',
+    }
+    if len(iface_keys) >= 1:
+        sigma_map['iface1_Nt'] = iface_keys[0]
+    if len(iface_keys) >= 2:
+        sigma_map['iface2_Nt'] = iface_keys[1]
+
+    runner = ScapsRunner(SCAPS_EXE, WORKING_DIR, SCRIPT_FILE,
+                         OUTPUT_IV_FILE, OUTPUT_QE_FILE, timeout=MAX_TIMEOUT)
+
+    mc_dir = os.path.join(OUT_DIR, 'mc_uncertainty')
+    os.makedirs(mc_dir, exist_ok=True)
+
+    np.random.seed(42)
+    mc_rows = []
+    rejected_precheck = 0
+    rejected_scaps = 0
+
+    for i in range(MC_N_SAMPLES):
+        perturbed = {}
+        for legacy_key, (sigma, dist) in MC_INPUT_SIGMA.items():
+            key = sigma_map.get(legacy_key, legacy_key)
+            nominal_val = nominal.get(key)
+            if nominal_val is None:
+                continue
+            perturbed[key] = _sample_parameter_v32(nominal_val, sigma, dist)
+
+        # Keep back-contact fixed unless explicitly present
+        perturbed['back_contact_wf'] = nominal.get('back_contact_wf', VALIDATED_BACK_WF)
+
+        layer_updates, iface_vals = _mc_build_updates(perturbed)
+
+        if MC_USE_PHYSICS_PRECHECK:
+            check = physics_precheck_detailed(layer_updates, iface_vals, device)
+            if not check['valid']:
+                rejected_precheck += 1
+                continue
+
+        temp_scaps = os.path.join(mc_dir, f'mc_sample_{i:04d}.scaps')
+        try:
+            build_updated_scaps_file(
+                TEMPLATE_FILE, temp_scaps, layer_updates, iface_vals,
+                back_contact_wf=perturbed['back_contact_wf'], verify=False
+            )
+        except Exception:
+            rejected_scaps += 1
+            continue
+
+        write_scaps_script(
+            SCRIPT_FILE, temp_scaps, OUTPUT_IV_FILE, OUTPUT_QE_FILE,
+            run_qe=False
+        )
+        ok = runner.run(wait_for_qe=False)
+        if not ok:
+            rejected_scaps += 1
+            continue
+
+        parsed = parse_iv(OUTPUT_IV_FILE)
+        if parsed is None:
+            rejected_scaps += 1
+            continue
+
+        Voc, Jsc, FF, eta = parsed
+        row = {
+            'sample_idx': i,
+            'Voc': Voc,
+            'Jsc': Jsc,
+            'FF': FF,
+            'eta': eta,
+        }
+        row.update(perturbed)
+        mc_rows.append(row)
+
+    if not mc_rows:
+        print('  ERROR: no successful MC samples')
+        return None
+
+    mc_df = pd.DataFrame(mc_rows)
+    stats_dict = {
+        'n_success': int(len(mc_df)),
+        'n_requested': int(MC_N_SAMPLES),
+        'n_rejected_precheck': int(rejected_precheck),
+        'n_rejected_scaps': int(rejected_scaps),
+        'yield_percent': float(100 * len(mc_df) / max(MC_N_SAMPLES, 1)),
+        'eta_mean': float(mc_df['eta'].mean()),
+        'eta_std': float(mc_df['eta'].std(ddof=1) if len(mc_df) > 1 else 0.0),
+        'eta_p05': float(mc_df['eta'].quantile(0.05)),
+        'eta_p50': float(mc_df['eta'].quantile(0.50)),
+        'eta_p95': float(mc_df['eta'].quantile(0.95)),
+        'Voc_mean': float(mc_df['Voc'].mean()),
+        'Jsc_mean': float(mc_df['Jsc'].mean()),
+        'FF_mean': float(mc_df['FF'].mean()),
+        'champion_scaps': optimal_device_file,
+    }
+
+    mc_df.to_csv(os.path.join(mc_dir, 'mc_samples.csv'), index=False)
+
+    fig = plt.figure(figsize=(8, 5))
+    plt.hist(mc_df['eta'], bins=30, alpha=0.85)
+    plt.axvline(stats_dict['eta_mean'], linestyle='--', linewidth=2, label=f"mean = {stats_dict['eta_mean']:.2f}%")
+    plt.axvline(stats_dict['eta_p05'], linestyle=':', linewidth=2, label=f"p05 = {stats_dict['eta_p05']:.2f}%")
+    plt.axvline(stats_dict['eta_p95'], linestyle=':', linewidth=2, label=f"p95 = {stats_dict['eta_p95']:.2f}%")
+    plt.xlabel('PCE (%)')
+    plt.ylabel('Count')
+    plt.title(f'Monte Carlo PCE distribution under fabrication uncertainty (N={MC_N_SAMPLES})')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(mc_dir, 'mc_distribution.png'), dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+    with open(os.path.join(mc_dir, 'mc_uncertainty_v32.json'), 'w', encoding='utf-8') as f:
+        json.dump({'stats': stats_dict}, f, indent=2)
+
+    print(f"  Success: {stats_dict['n_success']}/{stats_dict['n_requested']} samples")
+    print(f"  PCE mean ± std: {stats_dict['eta_mean']:.3f} ± {stats_dict['eta_std']:.3f}%")
+    print(f"  PCE p05/p95:   {stats_dict['eta_p05']:.3f}% / {stats_dict['eta_p95']:.3f}%")
+    print(f"  Saved: {os.path.join(mc_dir, 'mc_samples.csv')}")
+    print(f"  Saved: {os.path.join(mc_dir, 'mc_uncertainty_v32.json')}")
+
+    return {'stats': stats_dict, 'samples': mc_df}
+
+
+# ####################################################################################
+# From the original notebook
+# ####################################################################################
 import os
 import pandas as pd
 import sqlite3

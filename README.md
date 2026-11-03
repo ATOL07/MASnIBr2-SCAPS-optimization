@@ -13,7 +13,7 @@ The notebook reproduces every table and figure of the article from the saved res
 
 ```
 notebook/MASnIBr2_SCAPS_optimization.ipynb   full workflow, Parts 0-9, with outputs
-src/scaps_tools.py                           helper code (SCAPS-1D interface, physics precheck, PPSR, TPE, GA)
+src/scaps_tools.py                           helper code (SCAPS-1D interface, physics precheck, PPSR, TPE, GA, Monte Carlo)
 scaps_files/                                 SCAPS-1D device files
     template_working.scaps                   initial device (Table 1, PCE 17.80%)
     baseline_best_seed789.scaps              final device (TPE, seed 789, PCE 25.27%)

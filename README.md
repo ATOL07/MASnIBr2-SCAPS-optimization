@@ -4,8 +4,7 @@ Code, data and trained models for the article
 
 > K. I. Atol, I. Mamoon, F. H. Al-Atawi, A. Irfan, M. F. Rahman, M. D. Haque,
 > *Multi Algorithm Bayesian Optimization and Machine Learning Surrogate Design of Lead-Free
-> FTO/WO3/MASnIBr2/CBTS/Au, Tin-perovskite Solar Cells*,
-> Sustainable Energy Technologies and Assessments (under review).
+> FTO/WO3/MASnIBr2/CBTS/Au, Tin-perovskite Solar Cells*.
 
 The notebook reproduces every table and figure of the article from the saved results, step by step.
 

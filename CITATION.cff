@@ -21,9 +21,6 @@ authors:
 preferred-citation:
   type: article
   title: "Multi Algorithm Bayesian Optimization and Machine Learning Surrogate Design of Lead-Free FTO/WO3/MASnIBr2/CBTS/Au, Tin-perovskite Solar Cells"
-  journal: "Sustainable Energy Technologies and Assessments"
-  year: 2026
-  notes: "Under review"
   authors:
     - family-names: Atol
       given-names: Khairul Islam

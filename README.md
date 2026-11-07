@@ -116,7 +116,7 @@ and need that version. The same models are rebuilt by cells 8.1 and 8.2 (fixed r
 | Fig. 5 (J-V, QE; data also as CSV) | 5.2 |
 | Energy band diagram (data as CSV) | 5.3 |
 | Section 3.5 recombination | 5.4 |
-| Section 3.4 thickness sweeps | 5.5 |
+| 1D thickness sweeps (supporting data) | 5.5 |
 | Fig. 9 | 5.6, 5.7 |
 | Fig. 10, SQ limit | 5.8-5.10 |
 | Fig. 11 | 5.11, 5.12 |

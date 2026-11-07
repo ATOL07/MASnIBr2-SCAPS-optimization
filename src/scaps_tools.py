@@ -101,7 +101,7 @@ def _grab_first_float(pattern, text, flags=0):
     return float(m.group(1))
 
 
-# Backward-compatible aliases used by the old debug/fix cells.
+# Backward-compatible aliases.
 safe_read_text_clean = safe_read_text
 safe_read_text_with_meta_clean = safe_read_text_with_meta
 safe_write_text_clean = safe_write_text
@@ -128,7 +128,7 @@ print('Utilities + DeviceConfig ready.')
 # ####################################################################################
 # CELL 5 — Thread-safe SQLite trial storage
 # ============================================================
-# SQLite with a lock is atomic and fast. Final patch:
+# SQLite with a lock is atomic and fast:
 #   - auto-creates / auto-adds missing columns when schema evolves
 #   - normalizes numpy scalars and NaN values
 #   - exposes valid_df() and count(), required by later cells
@@ -731,7 +731,7 @@ def parse_iv(iv_file: str) -> Optional[Tuple[float, float, float, float]]:
     except Exception:
         return None
 
-print('SCAPS runner patched: /IM kill + mtime monitoring + stable script commands + parse_iv')
+print('SCAPS runner ready: /IM kill + mtime monitoring + stable script commands + parse_iv')
 
 
 # ####################################################################################
@@ -889,7 +889,7 @@ def rebuild_feature_cols_from_current_device(dev: DeviceConfig) -> List[str]:
 # ####################################################################################
 # CELL 8 — .scaps file builder with round-trip verification
 # ============================================================
-# Final validated builder merged from debug/fix cells:
+# Validated .scaps file builder:
 #   - updates layer parameters in raw SCAPS units
 #   - updates interface N in raw SCAPS units
 #   - aligns interface names to the real template order
@@ -922,7 +922,7 @@ def _extract_interface_block(text: str, iface_name: str):
     return m.group(1) if m else None
 
 
-# Backward-compatible aliases used in debug cells.
+# Backward-compatible aliases.
 _extract_layer_block_clean = _extract_layer_block
 _extract_interface_block_clean = _extract_interface_block
 
@@ -955,7 +955,7 @@ def _set_contact_work_function(text: str, back_contact_wf: float) -> str:
     return set_contact_value_by_block(text, 'back', back_contact_wf)
 
 
-# Alias used by the old debug/fix cells.
+# Backward-compatible alias.
 _set_contact_work_function_clean = _set_contact_work_function
 
 
@@ -1122,7 +1122,7 @@ def build_updated_scaps_file(
             raise AssertionError(f'Back contact mismatch: target {back_contact_wf}, got {back}')
 
 
-# Backward-compatible alias from debug cells.
+# Backward-compatible alias.
 build_updated_scaps_file_clean = build_updated_scaps_file
 
 print('Validated .scaps builder ready: layers + interfaces + contacts + round-trip verification.')
@@ -2067,7 +2067,7 @@ def joint_narrow_ranges(valid_df: pd.DataFrame, current_ranges: dict,
     return new_ranges
 
 
-# Patch auto_narrow_ranges to try joint first
+# auto_narrow_ranges tries joint narrowing first
 _original_auto_narrow = auto_narrow_ranges
 
 def auto_narrow_ranges_v3(valid_df, importance, current_ranges, round_num,

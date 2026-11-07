@@ -4,6 +4,33 @@ Loaded by the notebook with  %run -i ../src/scaps_tools.py  so that every
 function sees the configuration variables of the notebook (paths, ranges, seeds).
 The code is the same as in the working notebook used for the paper."""
 
+import os, re, math, time, random, shutil, json, sqlite3, platform, subprocess, threading
+from dataclasses import dataclass, field
+from typing import Optional, Dict, List, Tuple
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import optuna
+import shap
+from scipy import interpolate, stats
+from sklearn.ensemble import RandomForestRegressor
+
+
+# Method switches. All of them have the values below in this work; a notebook may
+# set them before loading this file (for example to switch one step off for a test).
+for _name, _value in {
+    'USE_PHYSICS_PRECHECK': True, 'USE_PHYSICS_POSTCHECK': True, 'USE_ROLLBACK': True,
+    'USE_PPSR_NARROWING': True, 'USE_JOINT_NARROWING': True,
+    'PRECHECK_DIFFUSION_LENGTH': True, 'PRECHECK_DEGENERATE_DOPING': True,
+    'PRECHECK_JUNCTION_FORMATION': True, 'PRECHECK_THIN_FILM_LIMIT': True,
+    'OPTIMIZE_INTERFACE_DEFECTS': True, 'MC_USE_PHYSICS_PRECHECK': True,
+    'SAVE_SCAPS_PER_TEMPERATURE': True, 'RUN_BASELINE': True, 'RUN_GA_BENCHMARK': True,
+    'ENFORCE_ABSORBER_THICKEST': False, 'EVAL_BOUNDARIES': False, 'COUPLE_WF_TO_HTL': False,
+}.items():
+    globals().setdefault(_name, _value)
+del _name, _value
+
 
 # ####################################################################################
 # From the original notebook
@@ -2904,8 +2931,7 @@ def run_ga_experiment() -> dict:
     return summary
 
 
-print('GA runner defined. Do NOT call manually.')
-print('If you want the GA benchmark, run the dedicated optional GA cell added below.')
+print('GA runner ready.')
 
 
 # ####################################################################################
@@ -3227,7 +3253,7 @@ print(f'  Save .scaps per temperature: {SAVE_SCAPS_PER_TEMPERATURE}')
 #   - raw samples (CSV) and a summary (JSON) are saved
 # ============================================================
 
-def _sample_parameter_v32(nominal_value, sigma, distribution):
+def _sample_parameter(nominal_value, sigma, distribution):
     """Sample a perturbed parameter value."""
     if distribution == 'lognormal':
         log_sigma = np.log1p(sigma)
@@ -3237,8 +3263,11 @@ def _sample_parameter_v32(nominal_value, sigma, distribution):
     raise ValueError(f'Unknown distribution: {distribution}')
 
 
-def _get_mc_nominal_params():
-    """Recover nominal optimal parameters from trials DB, then JSON, then defaults."""
+_sample_parameter_v32 = _sample_parameter   # older name, kept for existing notebooks
+
+
+def _get_mc_nominal_params(db_path=None):
+    """Nominal (best) device of a trials database; default values if the database is missing."""
     etl = device.get_layer_by_role('ETL')
     absorber = device.get_layer_by_role('ABSORBER')
     htl = device.get_layer_by_role('HTL')
@@ -3249,12 +3278,15 @@ def _get_mc_nominal_params():
         f'{etl.name}_ND'             : 1.0e18 if etl else 1.0e18,
         f'{htl.name}_NA'             : 1.0e18 if htl else 1.0e18,
         f'{absorber.name}_defect'    : 1.0e14 if absorber else 1.0e14,
+        f'{etl.name}_defect'         : 1.0e14,
+        f'{htl.name}_defect'         : 1.0e14,
         'back_contact_wf'            : VALIDATED_BACK_WF,
     }
     for iface_key in getattr(device, 'interface_space', {}):
         defaults[iface_key] = FIXED_INTERFACE_N
 
-    db_path = globals().get('DB_PATH', os.path.join(OUT_DIR, 'trials.db'))
+    if db_path is None:
+        db_path = globals().get('DB_PATH', os.path.join(OUT_DIR, 'trials.db'))
     try:
         if os.path.exists(db_path):
             with sqlite3.connect(db_path) as conn:
@@ -3297,7 +3329,7 @@ def _mc_build_updates(perturbed):
             'doping_type' : etl.doping_type,
             'na_val'      : None,
             'nd_val'      : perturbed.get(f'{etl.name}_ND'),
-            'defect'      : None,
+            'defect'      : perturbed.get(f'{etl.name}_defect'),
         }
     if absorber:
         layer_updates[absorber.block_name] = {
@@ -3313,7 +3345,7 @@ def _mc_build_updates(perturbed):
             'doping_type' : htl.doping_type,
             'na_val'      : perturbed.get(f'{htl.name}_NA'),
             'nd_val'      : None,
-            'defect'      : None,
+            'defect'      : perturbed.get(f'{htl.name}_defect'),
         }
 
     iface_vals = {}
@@ -3323,8 +3355,13 @@ def _mc_build_updates(perturbed):
     return layer_updates, iface_vals
 
 
-def run_mc_uncertainty(optimal_device_file):
-    """Run full structural Monte Carlo uncertainty with .scaps mutation."""
+def run_mc_uncertainty(optimal_device_file, nominal_db=None, summary_name='mc_uncertainty_v32.json'):
+    """Monte Carlo fabrication tolerance: MC_N_SAMPLES random devices around the nominal device.
+
+    nominal_db   : trials database whose best valid trial is the nominal device
+                   (default: the database in DB_PATH)
+    summary_name : file name of the JSON summary written to OUT_DIR/mc_uncertainty
+    """
     print('=' * 70)
     print(f'MONTE CARLO UNCERTAINTY — {MC_N_SAMPLES} samples')
     print('=' * 70)
@@ -3333,7 +3370,7 @@ def run_mc_uncertainty(optimal_device_file):
         print(f'  ERROR: Optimal device file not found: {optimal_device_file}')
         return None
 
-    nominal = _get_mc_nominal_params()
+    nominal = _get_mc_nominal_params(nominal_db) if nominal_db else _get_mc_nominal_params()
 
     # Map legacy sigma names to actual notebook column names
     etl = device.get_layer_by_role('ETL')
@@ -3348,6 +3385,8 @@ def run_mc_uncertainty(optimal_device_file):
         'wo3_ND'            : f'{etl.name}_ND' if etl else 'WO3_ND',
         'cbts_NA'           : f'{htl.name}_NA' if htl else 'CBTS_NA',
         'absorber_Nt'       : f'{absorber.name}_defect' if absorber else 'MASnIBr2_defect',
+        'wo3_Nt'            : f'{etl.name}_defect' if etl else 'WO3_defect',
+        'cbts_Nt'           : f'{htl.name}_defect' if htl else 'CBTS_defect',
     }
     if len(iface_keys) >= 1:
         sigma_map['iface1_Nt'] = iface_keys[0]
@@ -3372,7 +3411,7 @@ def run_mc_uncertainty(optimal_device_file):
             nominal_val = nominal.get(key)
             if nominal_val is None:
                 continue
-            perturbed[key] = _sample_parameter_v32(nominal_val, sigma, dist)
+            perturbed[key] = _sample_parameter(nominal_val, sigma, dist)
 
         # Keep back-contact fixed unless explicitly present
         perturbed['back_contact_wf'] = nominal.get('back_contact_wf', VALIDATED_BACK_WF)
@@ -3457,14 +3496,14 @@ def run_mc_uncertainty(optimal_device_file):
     plt.savefig(os.path.join(mc_dir, 'mc_distribution.png'), dpi=300, bbox_inches='tight')
     plt.close(fig)
 
-    with open(os.path.join(mc_dir, 'mc_uncertainty_v32.json'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(mc_dir, summary_name), 'w', encoding='utf-8') as f:
         json.dump({'stats': stats_dict}, f, indent=2)
 
     print(f"  Success: {stats_dict['n_success']}/{stats_dict['n_requested']} samples")
     print(f"  PCE mean ± std: {stats_dict['eta_mean']:.3f} ± {stats_dict['eta_std']:.3f}%")
     print(f"  PCE p05/p95:   {stats_dict['eta_p05']:.3f}% / {stats_dict['eta_p95']:.3f}%")
     print(f"  Saved: {os.path.join(mc_dir, 'mc_samples.csv')}")
-    print(f"  Saved: {os.path.join(mc_dir, 'mc_uncertainty_v32.json')}")
+    print(f"  Saved: {os.path.join(mc_dir, summary_name)}")
 
     return {'stats': stats_dict, 'samples': mc_df}
 
@@ -3476,10 +3515,6 @@ import os
 import pandas as pd
 import sqlite3
 import json
-
-print("="*70)
-print("  RELOADING SAVED RESULTS FROM DISK")
-print("="*70)
 
 def reload_optimization_results(db_path, label):
     if not os.path.exists(db_path):

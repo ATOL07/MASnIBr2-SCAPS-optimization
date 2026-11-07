@@ -6,7 +6,9 @@ three optimization algorithms look for the layer settings that give the highest 
 (PCE), and a machine-learning model learns to predict the PCE in a fraction of a second.
 
 You do **not** need SCAPS-1D or any prior knowledge of the project to explore the results:
-all simulations are saved in this repository, and the notebook rebuilds every table and figure from them.
+all simulations are saved in this repository, and the main notebook rebuilds every table and figure from them.
+A second, clean notebook runs the complete workflow from the first SCAPS-1D simulation to the last figure,
+for anyone who wants to repeat the study or apply it to another device.
 
 ---
 
@@ -17,7 +19,7 @@ all simulations are saved in this repository, and the notebook rebuilds every ta
 3. [Quick start (step by step)](#3-quick-start-step-by-step)
 4. [How the workflow works](#4-how-the-workflow-works)
 5. [What is in the repository](#5-what-is-in-the-repository)
-6. [Guide to the notebook](#6-guide-to-the-notebook)
+6. [Guide to the notebooks](#6-guide-to-the-notebooks)
 7. [The ten design variables](#7-the-ten-design-variables)
 8. [Using the data and the trained models](#8-using-the-data-and-the-trained-models)
 9. [Running the SCAPS-1D simulations yourself](#9-running-the-scaps-1d-simulations-yourself)
@@ -64,7 +66,16 @@ absorber defect density, i.e. a target for high-quality films, not a measured ef
 |---|---|---|---|
 | **1. Just look** | a web browser | read the notebook with all outputs and figures directly on GitHub; open the CSV files | minutes |
 | **2. Re-run the analysis** | Python 3.10 or newer | rebuild every table and figure from the saved simulations (`RUN_SIMULATIONS = False`) | about 1 hour |
-| **3. Re-run everything** | Windows, SCAPS-1D 3.3.11 and Python | repeat all SCAPS-1D simulations, or optimize your own device | about 3–4 days |
+| **3. Re-run everything** | Windows, SCAPS-1D 3.3.11 and Python | repeat all SCAPS-1D simulations with the clean notebook, or optimize your own device | about 3–4 days |
+
+**The two notebooks**
+
+| Notebook | What it is | Use it to |
+|---|---|---|
+| [`MASnIBr2_SCAPS_optimization.ipynb`](notebook/MASnIBr2_SCAPS_optimization.ipynb) (main notebook) | the analysis of this study with all outputs shown; it reads the saved simulations in `results/` | read the results (level 1) or re-run the analysis without SCAPS-1D (level 2) |
+| [`MASnIBr2_workflow.ipynb`](notebook/MASnIBr2_workflow.ipynb) (clean notebook) | the same workflow as one linear notebook, from top to bottom, without outputs; every step that needs SCAPS-1D runs it, and all results are written to a new folder `output/` | run the whole study from scratch (level 3), or use it as a starting point for your own device |
+
+Both notebooks use the same helper code (`src/scaps_tools.py`) and the same settings.
 
 ---
 
@@ -132,7 +143,8 @@ flowchart LR
 
 ```
 notebook/
-    MASnIBr2_SCAPS_optimization.ipynb   the complete workflow (Parts 0–9), with all outputs
+    MASnIBr2_SCAPS_optimization.ipynb   main notebook: the complete analysis (Parts 0–9), with all outputs
+    MASnIBr2_workflow.ipynb             clean notebook: the same workflow from scratch, without outputs
 src/
     scaps_tools.py                      helper code: SCAPS-1D interface, physics precheck,
                                         PPSR, TPE and GA runners, sweeps, Monte Carlo
@@ -151,6 +163,7 @@ results/
     ml_surrogate/                       machine-learning dataset and results
     figures/                            all figures (PNG, PDF, TIFF; single panels in figures/panels)
     ...                                 further result folders, one per analysis (see the notebook)
+output/                                 created by the clean notebook for its own results (not in the repository)
 requirements.txt                        Python packages and the versions used
 LICENSE                                 MIT licence
 CITATION.cff                            how to cite this repository
@@ -158,10 +171,12 @@ CITATION.cff                            how to cite this repository
 
 ---
 
-## 6. Guide to the notebook
+## 6. Guide to the notebooks
 
-Each part starts with a short explanation, and each cell starts with a comment that says what it does.
-Cells marked **[SCAPS]** call SCAPS-1D when `RUN_SIMULATIONS = True` and read the saved results otherwise.
+Both notebooks follow the parts below. In the main notebook each cell starts with a comment that says what
+it does, and cells marked **[SCAPS]** call SCAPS-1D when `RUN_SIMULATIONS = True` and read the saved results otherwise.
+In the clean notebook every step is introduced by a short text above the cell; the figures are saved in
+`output/figures` under names that describe their content (for example `convergence.png` or `monte_carlo_pce.png`).
 
 | Part | What it does | Main outputs |
 |---|---|---|
@@ -263,18 +278,21 @@ SCAPS-1D is developed by M. Burgelman and colleagues at the University of Gent a
 on request from <https://scaps.elis.ugent.be/>. It runs on Windows and is not included in this repository.
 
 1. Install SCAPS-1D 3.3.11.
-2. In cell 0.4, set `SCAPS_DIR` to the SCAPS-1D folder (for example `r'C:\Scaps3311'`) and
-   `RUN_SIMULATIONS = True`.
-3. Run the notebook. Approximate SCAPS-1D times: PPSR 16 h, TPE 24 h and GA 27 h (six seeds each),
-   PCE map 7 h, Monte Carlo 2 h. Each part can also be run on its own; for example, cell 3.1 explains how to
-   run a single seed.
+2. Open the clean notebook `notebook/MASnIBr2_workflow.ipynb` and set `SCAPS_DIR` in step 0.3 to the SCAPS-1D
+   folder (for example `r'C:\Scaps3311'`).
+3. Choose **Kernel → Restart & Run All**. Approximate SCAPS-1D times: PPSR 16 h, TPE 24 h and GA 27 h
+   (six seeds each), PCE maps 7 h, Monte Carlo 2 h. All results are written to `output/`, so the saved results
+   in `results/` stay unchanged.
+
+The main notebook can also repeat the simulations: set `SCAPS_DIR` and `RUN_SIMULATIONS = True` in its cell 0.4.
+It then writes into `results/`.
 
 **Quick check without Python.** Open `scaps_files/baseline_best_seed789.scaps` in SCAPS-1D and run the J–V
 calculation under AM1.5G at 300 K. It gives PCE = 25.27%, Voc = 1.416 V, Jsc = 19.99 mA cm-2 and FF = 89.30%.
 
 **Optimizing another device (advanced).** Replace the initial device file in `scaps_files/`, then update the
 layer names and roles (`MANUAL_ROLES`), the search ranges (`INITIAL_PARAM_RANGES`) and the material values used
-by the precheck (`MATERIAL_PARAMS`) in cell 0.4. The helper code reads the layers from the device file, so
+by the precheck (`MATERIAL_PARAMS`) in the configuration cell (step 0.3 of the clean notebook). The helper code reads the layers from the device file, so
 devices with the same layer roles (TCO / ETL / absorber / HTL) need only these changes.
 
 ---
@@ -308,7 +326,7 @@ devices with the same layer roles (TCO / ETL / absorber / HTL) need only these c
 | Cell 8.2 stops or the computer becomes slow | close other programs; about 8 GB of free RAM is needed |
 | The trained models do not load | install scikit-learn 1.8.0: `pip install scikit-learn==1.8.0` |
 | Slightly different machine-learning numbers | other package versions can change the 4th decimal; use the versions in `requirements.txt` |
-| SCAPS-1D is not found | check `SCAPS_DIR` in cell 0.4; SCAPS-1D is needed only when `RUN_SIMULATIONS = True` |
+| SCAPS-1D is not found | check `SCAPS_DIR` (step 0.3 of the clean notebook, cell 0.4 of the main notebook); the main notebook needs SCAPS-1D only when `RUN_SIMULATIONS = True` |
 
 Questions and problems can be reported as an issue on the GitHub page of this repository.
 

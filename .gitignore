@@ -4,3 +4,5 @@ results/figures/*.tiff
 results/**/*.pkl
 .ipynb_checkpoints/
 __pycache__/
+# results written by the clean notebook
+output/

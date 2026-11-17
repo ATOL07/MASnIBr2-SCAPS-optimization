@@ -20,7 +20,7 @@ authors:
     given-names: Md. Dulal
 preferred-citation:
   type: article
-  title: "Multi Algorithm Bayesian Optimization and Machine Learning Surrogate Design of Lead-Free FTO/WO3/MASnIBr2/CBTS/Au, Tin-perovskite Solar Cells"
+  title: "Multi algorithm Bayesian optimization and machine learning surrogate design of lead-free FTO/WO3/MASnIBr2/CBTS/Au, tin-perovskite solar cells"
   authors:
     - family-names: Atol
       given-names: Khairul Islam
@@ -34,3 +34,9 @@ preferred-citation:
       given-names: Md. Ferdous
     - family-names: Haque
       given-names: Md. Dulal
+  journal: "Sustainable Energy Technologies and Assessments"
+  volume: 96
+  start: "105591"
+  year: 2026
+  doi: "10.1016/j.seta.2026.105591"
+  url: "https://doi.org/10.1016/j.seta.2026.105591"

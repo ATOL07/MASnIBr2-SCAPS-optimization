@@ -10,6 +10,9 @@ all simulations are saved in this repository, and the main notebook rebuilds eve
 A second, clean notebook runs the complete workflow from the first SCAPS-1D simulation to the last figure,
 for anyone who wants to repeat the study or apply it to another device.
 
+**Published article:** K. I. Atol et al., *Sustainable Energy Technologies and Assessments* 96 (2026) 105591.
+https://doi.org/10.1016/j.seta.2026.105591
+
 ---
 
 ## Contents
@@ -337,8 +340,24 @@ Questions and problems can be reported as an issue on the GitHub page of this re
 If you use this code or data, please cite the article:
 
 > K. I. Atol, I. Mamoon, F. H. Al-Atawi, A. Irfan, M. F. Rahman, M. D. Haque,
-> *Multi Algorithm Bayesian Optimization and Machine Learning Surrogate Design of Lead-Free
-> FTO/WO3/MASnIBr2/CBTS/Au, Tin-perovskite Solar Cells*.
+> Multi algorithm Bayesian optimization and machine learning surrogate design of lead-free
+> FTO/WO3/MASnIBr2/CBTS/Au, tin-perovskite solar cells,
+> *Sustainable Energy Technologies and Assessments* 96 (2026) 105591.
+> https://doi.org/10.1016/j.seta.2026.105591
+
+BibTeX:
+
+```bibtex
+@article{Atol2026MASnIBr2,
+  author  = {Atol, Khairul Islam and Mamoon, Iqra and Al-Atawi, Faoz H. and Irfan, Ahmad and Rahman, Md. Ferdous and Haque, Md. Dulal},
+  title   = {Multi algorithm {Bayesian} optimization and machine learning surrogate design of lead-free {FTO/WO$_3$/MASnIBr$_2$/CBTS/Au}, tin-perovskite solar cells},
+  journal = {Sustainable Energy Technologies and Assessments},
+  volume  = {96},
+  pages   = {105591},
+  year    = {2026},
+  doi     = {10.1016/j.seta.2026.105591}
+}
+```
 
 The citation details are also in [`CITATION.cff`](CITATION.cff); GitHub shows them under **Cite this repository**.
 
